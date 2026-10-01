@@ -39,5 +39,7 @@ not here.
 - `web/` — the shareable page (assemble the reference renderer + this
   package into a static site, the pattern openworldformat's website
   uses).
-- Flip `openworldformat` from the `file:` dependency to the registry
-  the day it publishes.
+- Schema validation still reads the sibling checkout
+  (`../openworldformat/schema/`) — the normative schema doesn't ship in
+  the npm package. If that sibling is absent, validate via the GitHub
+  raw URL instead.

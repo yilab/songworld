@@ -8,8 +8,8 @@ with the whole arrangement.
 
 The first independent producer of
 [Open World Format](https://openworldformat.org) packages: no LocalGPT
-code, just the format — parse, fold and validate against the reference
-npm package and the normative schema.
+code, no spec-repo checkout — just `openworldformat` from npm, plus
+the normative schema for validation.
 
 ## Two packages, one score
 
@@ -36,13 +36,14 @@ the way down.
 ## Use
 
 ```bash
-npm install   # links the openworldformat reference from the sibling checkout
+npm install   # openworldformat ^0.1.0, from the registry
 npm run build # regenerates world/ and world-recording/ (deterministic)
 npm test      # folds, validates, and checks the arrangement reads
 ```
 
-The dependency is `file:../openworldformat/js` until the reference
-publishes to npm — flip it to a version range the day it does.
+The reference comes from npm — this repository holds no LocalGPT code
+and no spec-repo symlinks; parse, fold and state-folding all run
+against the published package.
 
 Any conforming renderer opens `world/manifest.json`; the audio starts
 from the world's own soundtrack block, not a player widget.
