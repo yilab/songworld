@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>song.world — a .world that is a song</title>
+  <meta name="description" content="A 3D world that performs a piece of music: synthesized, analysis-driven, no engine, no install. An Open World Format package.">
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #08070d; color: #e8e6f0;
+      font: 15px/1.5 ui-sans-serif, system-ui, sans-serif; overflow: hidden; }
+    #scene { position: fixed; inset: 0; }
+    #scene canvas { display: block; }
+    .panel { position: fixed; background: rgba(10, 8, 18, 0.82);
+      border: 1px solid rgba(160, 140, 220, 0.25); border-radius: 10px;
+      padding: 10px 14px; backdrop-filter: blur(6px); }
+    #top { top: 14px; left: 14px; display: flex; gap: 12px; align-items: baseline; }
+    #top h1 { margin: 0; font-size: 17px; font-weight: 650; letter-spacing: 0.01em; }
+    #top h1 a { color: inherit; text-decoration: none; }
+    #top select { background: #14111f; color: inherit; border: 1px solid #3a3355;
+      border-radius: 6px; padding: 3px 6px; font: inherit; }
+    #status { top: 14px; right: 14px; display: none; max-width: 40ch; }
+    #pitch { bottom: 14px; left: 14px; max-width: 62ch; font-size: 13.5px;
+      color: #b9b3cf; }
+    #pitch strong { color: #e8e6f0; }
+    #pitch a { color: #9fd8c8; }
+    #controls { bottom: 14px; right: 14px; display: flex; gap: 8px; }
+    #controls button { background: #1b1730; color: #e8e6f0; cursor: pointer;
+      border: 1px solid #453c6b; border-radius: 7px; padding: 6px 12px; font: inherit; }
+    #controls button:hover { background: #272146; }
+    #help { top: 60px; left: 14px; font-size: 12.5px; color: #8d86a8; display: none; }
+  </style>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "./vendor/three/build/three.module.js",
+      "three/addons/": "./vendor/three/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div id="scene"></div>
+
+  <div id="top" class="panel">
+    <h1><a href="https://openworldformat.org">song.world</a></h1>
+    <select id="picker" aria-label="Choose the package">
+      <option value="pkg/world">the silent package (curves only)</option>
+      <option value="pkg/world-recording">the recording (audio + live analyser)</option>
+    </select>
+  </div>
+  <div id="status" class="panel"></div>
+  <div id="help" class="panel">Drag to orbit · Scroll to zoom · WASD + Space/Shift to move</div>
+  <div id="pitch" class="panel">
+    <strong>A world that is a song.</strong> A synthesized 64-second performance
+    whose analysis curves drive every entity — the kick pulses on the beat, the
+    bass wall swells with the root, the veil breathes with the mix. The silent
+    package ships no audio at all:
+    <a href="https://openworldformat.org">an Open World Format</a> world
+    performs its music without the recording.
+  </div>
+  <div id="controls" class="panel">
+    <button id="tour-btn" style="display:none">Start tour</button>
+    <button id="audio-btn" style="display:none">Sound on</button>
+  </div>
+
+  <script type="module">
+    import { createWorldViewer } from './world-viewer.js';
+
+    const params = new URLSearchParams(location.search);
+    const status = document.getElementById('status');
+    const container = document.getElementById('scene');
+    let viewer = null;
+
+    const show = (text) => { status.textContent = text; status.style.display = text ? 'block' : 'none'; };
+
+    async function open(pkg) {
+      show('Loading…');
+      viewer?.dispose();
+      try {
+        const response = await fetch(`${pkg}/manifest.json`);
+        if (!response.ok) throw new Error(`${pkg}: ${response.status}`);
+        const manifest = await response.json();
+        viewer = createWorldViewer(container, manifest, {
+          assetBase: `${pkg}/assets/`,
+          tourButton: document.getElementById('tour-btn'),
+          audioButton: document.getElementById('audio-btn'),
+        });
+        window.owfViewer = viewer; // for the headless render check
+        show(null);
+        document.getElementById('help').style.display = 'block';
+      } catch (e) {
+        show(`Couldn't load ${pkg}: ${e.message}`);
+        window.owfViewer = null;
+      }
+    }
+
+    document.getElementById('picker').addEventListener('change', (e) => open(e.target.value));
+    const initial = params.get('pkg') ?? document.getElementById('picker').value;
+    if ([...document.getElementById('picker').options].some((o) => o.value === initial)) {
+      document.getElementById('picker').value = initial;
+    }
+    open(initial);
+  </script>
+</body>
+</html>

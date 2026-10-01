@@ -6,10 +6,16 @@
   "description": "song.world \u2014 a .world that is a song: a synthesized performance whose analysis curves drive every entity. The first independent producer of Open World Format packages.",
   "scripts": {
     "build": "node build/build.mjs",
-    "test": "node --test"
+    "test": "node --test",
+    "assemble": "node web/assemble.mjs",
+    "check": "npm run assemble && node web/check.mjs"
   },
   "dependencies": {
     "openworldformat": "^0.1.0"
   },
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "playwright": "^1.63.0",
+    "three": "^0.186.1"
+  }
 }

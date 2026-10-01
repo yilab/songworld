@@ -48,6 +48,22 @@ against the published package.
 Any conforming renderer opens `world/manifest.json`; the audio starts
 from the world's own soundtrack block, not a player widget.
 
+## The page
+
+`web/` assembles the shareable site — the **published** renderer from
+`node_modules/openworldformat`, three.js vendored, both packages — into
+`web/assembled/` (gitignored; rerun after a build):
+
+```bash
+npm run assemble && python3 -m http.server -d web/assembled 8000
+npm run check   # headless: both packages must render, zero errors
+```
+
+CI goes further: the committed packages must be **byte-reproducible**
+(`npm run build && git diff --exit-code`), the page must render
+headless, and the manifests must validate against the spec's normative
+schema.
+
 ## Layout
 
 ```
@@ -55,6 +71,7 @@ build/build.mjs   the score, the synth, the curves, the emitter
 world/            the silent package (curves only)
 world-recording/  the package with the recording (content-addressed)
 test/             folds + schema discipline + musical assertions
+web/              the shareable page (assembled; gitignored output)
 ```
 
 ## License

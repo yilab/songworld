@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    name: Build, test, render
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npm test
+      # The packages are committed artifacts: rebuilding must reproduce
+      # them byte for byte, or the repo is lying about its own build.
+      - run: npm run build
+      - run: git diff --exit-code world world-recording
+      # The shareable page renders both packages headless.
+      - run: npx playwright install --with-deps chromium
+      - run: npm run check
+      # The manifests validate against the format's normative schema
+      # (fetched from the spec repository — this repo has no sibling).
+      - name: Validate against the Open World Format schema
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/openworldformat/openworldformat/main/schema/world.schema.json -o /tmp/world.schema.json
+          npx -y ajv-cli@5 validate -s /tmp/world.schema.json \
+            -d "world/manifest.json" -d "world-recording/manifest.json" \
+            --spec=draft2020 --strict=false
