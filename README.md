@@ -36,7 +36,7 @@ the way down.
 ## Use
 
 ```bash
-npm install   # openworldformat ^0.1.0, from the registry
+npm install   # openworldformat ^0.2.0, from the registry
 npm run build # regenerates world/ and world-recording/ (deterministic)
 npm test      # folds, validates, and checks the arrangement reads
 ```

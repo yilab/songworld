@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "song.world \u2014 a .world that is a song: a synthesized performance whose analysis curves drive every entity. The first independent producer of Open World Format packages.",
+  "description": "song.world — a .world that is a song: a synthesized performance whose analysis curves drive every entity. The first independent producer of Open World Format packages.",
   "scripts": {
     "build": "node build/build.mjs",
     "test": "node --test",
@@ -12,7 +12,7 @@
     "deploy": "./deploy.sh"
   },
   "dependencies": {
-    "openworldformat": "^0.1.0"
+    "openworldformat": "^0.2.0"
   },
   "license": "Apache-2.0",
   "devDependencies": {
