@@ -56,11 +56,25 @@ for (const pkg of ["pkg/world", "pkg/world-recording"]) {
     // reported below
   }
   const canvas = await page.evaluate(() => Boolean(document.querySelector("#scene canvas")));
-  const ok = Boolean(info) && canvas && errors.length === 0 && info.entityCount >= 15;
+  // The recording's audio must actually be reachable — the sound bug
+  // this check missed was a doubled assets/ path 404ing the WAV.
+  let audio = "n/a";
+  if (pkg === "pkg/world-recording" && info) {
+    audio = await page.evaluate(async () => {
+      const st = window.owfViewer ? null : null;
+      const response = await fetch("pkg/world-recording/manifest.json");
+      const path = (await response.json()).soundtrack.path;
+      const r = await fetch(`pkg/world-recording/${path}`, { method: "HEAD" });
+      return r.status;
+    });
+  }
+  const ok = Boolean(info) && canvas && errors.length === 0 && info.entityCount >= 15
+    && (audio === "n/a" || audio === 200);
   if (!ok) failed += 1;
   console.log(
     `${ok ? "ok  " : "FAIL"} ${pkg}: entities=${info?.entityCount ?? 0}`
-      + ` tours=${info?.tourCount ?? 0} canvas=${canvas} errors=${errors.length}`,
+      + ` tours=${info?.tourCount ?? 0} canvas=${canvas} errors=${errors.length}`
+      + (audio === "n/a" ? "" : ` audio=${audio}`),
   );
   for (const error of errors) console.log(`      ${error.slice(0, 300)}`);
 }

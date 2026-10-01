@@ -46,11 +46,12 @@
   <div id="top" class="panel">
     <h1><a href="https://openworldformat.org">song.world</a></h1>
     <select id="picker" aria-label="Choose the package">
-      <option value="pkg/world">the silent package (curves only)</option>
-      <option value="pkg/world-recording">the recording (audio + live analyser)</option>
+      <option value="pkg/world-recording">the recording (sound on)</option>
+      <option value="pkg/world">the silent package (no audio, on purpose)</option>
     </select>
   </div>
   <div id="status" class="panel"></div>
+  <div id="note" class="panel" style="top:60px;left:14px;display:none;max-width:46ch;font-size:13px;color:#b9b3cf"></div>
   <div id="help" class="panel">Drag to orbit · Scroll to zoom · WASD + Space/Shift to move</div>
   <div id="pitch" class="panel">
     <strong>A world that is a song.</strong> A synthesized 64-second performance
@@ -83,7 +84,7 @@
         if (!response.ok) throw new Error(`${pkg}: ${response.status}`);
         const manifest = await response.json();
         viewer = createWorldViewer(container, manifest, {
-          assetBase: `${pkg}/assets/`,
+          assetBase: `${pkg}/`,
           tourButton: document.getElementById('tour-btn'),
           audioButton: document.getElementById('audio-btn'),
         });
@@ -96,11 +97,22 @@
       }
     }
 
-    document.getElementById('picker').addEventListener('change', (e) => open(e.target.value));
+    const note = document.getElementById('note');
+    const explain = (pkg) => {
+      if (pkg === 'pkg/world') {
+        note.textContent = 'This package ships no audio at all — the analysis curves alone drive every entity. That is the format\u2019s trick: a world performs its music without the recording. Switch to the recording to hear it.';
+        note.style.display = 'block';
+      } else {
+        note.textContent = '';
+        note.style.display = 'none';
+      }
+    };
+    document.getElementById('picker').addEventListener('change', (e) => { open(e.target.value); explain(e.target.value); });
     const initial = params.get('pkg') ?? document.getElementById('picker').value;
     if ([...document.getElementById('picker').options].some((o) => o.value === initial)) {
       document.getElementById('picker').value = initial;
     }
+    explain(initial);
     open(initial);
   </script>
 </body>
