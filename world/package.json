@@ -1,0 +1,17 @@
+{
+ "format_version": 1,
+ "name": "song-world",
+ "profiles": [
+  "viewer",
+  "player",
+  "session"
+ ],
+ "base_revision": 0,
+ "head_revision": 1,
+ "refs": {
+  "main": "line-3"
+ },
+ "forked_from": null,
+ "seed": null,
+ "updated_ms": 1790000390000
+}

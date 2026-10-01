@@ -1,0 +1,9 @@
+{
+ "format_version": 1,
+ "fields": {
+  "plays.count": {
+   "type": "int",
+   "initial": 0
+  }
+ }
+}

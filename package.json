@@ -1,0 +1,15 @@
+{
+  "name": "songworld",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "song.world — a .world that is a song: a synthesized performance whose analysis curves drive every entity. The first independent producer of Open World Format packages.",
+  "scripts": {
+    "build": "node build/build.mjs",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "openworldformat": "file:../openworldformat/js"
+  },
+  "license": "Apache-2.0"
+}
