@@ -1,0 +1,14 @@
+// Cloudflare Worker for songworld: static assets only, no Worker
+// script, nothing to build at deploy time. Deploy with ./deploy.sh
+// (or npm run deploy) from this directory — it assembles web/assembled/
+// first, the same output `npm run check` renders headless.
+{
+  "name": "songworld",
+  "compatibility_date": "2026-09-30",
+  "assets": {
+    "directory": "./web/assembled"
+  },
+  "observability": {
+    "enabled": true
+  }
+}

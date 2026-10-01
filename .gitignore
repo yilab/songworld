@@ -1,2 +1,4 @@
 node_modules/
 web/assembled/
+.wrangler/
+.DS_Store

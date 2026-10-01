@@ -57,6 +57,7 @@ from the world's own soundtrack block, not a player widget.
 ```bash
 npm run assemble && python3 -m http.server -d web/assembled 8000
 npm run check   # headless: both packages must render, zero errors
+./deploy.sh     # assemble + publish as the "songworld" Cloudflare Worker
 ```
 
 CI goes further: the committed packages must be **byte-reproducible**

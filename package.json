@@ -8,7 +8,8 @@
     "build": "node build/build.mjs",
     "test": "node --test",
     "assemble": "node web/assemble.mjs",
-    "check": "npm run assemble && node web/check.mjs"
+    "check": "npm run assemble && node web/check.mjs",
+    "deploy": "./deploy.sh"
   },
   "dependencies": {
     "openworldformat": "^0.1.0"
