@@ -8,6 +8,7 @@
 // copy, not a sibling checkout: the page ships what npm shipped.
 
 import { cp, mkdir, rm, readdir } from "node:fs/promises";
+import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -31,9 +32,11 @@ for (const dir of ["loaders", "controls", "utils"]) {
     path.join(out, `vendor/three/examples/jsm/${dir}`), { recursive: true });
 }
 
-// The published renderer, verbatim, and the page that hosts it.
-await cp(path.join(root, "node_modules", "openworldformat/src/render.js"),
-  path.join(out, "world-viewer.js"));
+// The published renderer, verbatim, and the page that hosts it. Resolved
+// through the package's exports map (openworldformat/render), so an
+// upstream file move fails here at assemble time, not as a page 404.
+const require = createRequire(import.meta.url);
+await cp(require.resolve("openworldformat/render"), path.join(out, "world-viewer.js"));
 await cp(path.join(root, "web", "index.html"), path.join(out, "index.html"));
 
 // The packages: manifest, log, state — and the recording's assets.
