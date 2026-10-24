@@ -2,8 +2,12 @@
 // script, nothing to build at deploy time. Deploy with ./deploy.sh
 // (or npm run deploy) from this directory — it assembles web/assembled/
 // first, the same output `npm run check` renders headless.
+//
+// The account is pinned: logged in to any other, ./deploy.sh stops
+// instead of offering to publish the Worker there.
 {
   "name": "songworld",
+  "account_id": "3ae73437b57d5cd4296180e88d8eb722",
   "compatibility_date": "2026-09-30",
   "assets": {
     "directory": "./web/assembled"
