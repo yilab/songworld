@@ -32,11 +32,13 @@ for (const dir of ["loaders", "controls", "utils"]) {
     path.join(out, `vendor/three/examples/jsm/${dir}`), { recursive: true });
 }
 
-// The published renderer, verbatim, and the page that hosts it. Resolved
-// through the package's exports map (openworldformat/render), so an
-// upstream file move fails here at assemble time, not as a page 404.
+// The published renderer, verbatim, beside the module it imports
+// (./cinematography.js, since 0.3), and the page that hosts it. Resolved
+// through the package's exports map, so an upstream file move fails here
+// at assemble time, not as a page 404.
 const require = createRequire(import.meta.url);
 await cp(require.resolve("openworldformat/render"), path.join(out, "world-viewer.js"));
+await cp(require.resolve("openworldformat/cinematography"), path.join(out, "cinematography.js"));
 await cp(path.join(root, "web", "index.html"), path.join(out, "index.html"));
 
 // The packages: manifest, log, state — and the recording's assets.

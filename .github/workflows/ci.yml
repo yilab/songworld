@@ -23,11 +23,17 @@ jobs:
       # The shareable page renders both packages headless.
       - run: npx playwright install --with-deps chromium
       - run: npm run check
-      # The manifests validate against the format's normative schema
-      # (fetched from the spec repository — this repo has no sibling).
-      - name: Validate against the Open World Format schema
+      # The manifests and state documents validate against the format's
+      # normative schemas (fetched from the spec repository — this repo
+      # has no sibling).
+      - name: Validate against the Open World Format schemas
         run: |
-          curl -fsSL https://raw.githubusercontent.com/openworldformat/openworldformat/main/schema/world.schema.json -o /tmp/world.schema.json
+          schema=https://raw.githubusercontent.com/openworldformat/openworldformat/main/schema
+          curl -fsSL "$schema/world.schema.json" -o /tmp/world.schema.json
+          curl -fsSL "$schema/state.schema.json" -o /tmp/state.schema.json
           npx -y ajv-cli@5 validate -s /tmp/world.schema.json \
             -d "world/manifest.json" -d "world-recording/manifest.json" \
+            --spec=draft2020 --strict=false
+          npx -y ajv-cli@5 validate -s /tmp/state.schema.json \
+            -d "world/state.json" -d "world-recording/state.json" \
             --spec=draft2020 --strict=false

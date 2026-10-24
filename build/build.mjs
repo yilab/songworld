@@ -20,6 +20,10 @@ import { createHash } from "node:crypto";
 import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
+import {
+  computeEntryId, foldPath, manifestText, parseLogLine, parseManifest, toManifest,
+} from "openworldformat";
+
 export const BPM = 120;
 export const DURATION = 64; // 32 bars of 2 s
 export const BEAT = 60 / BPM;
@@ -368,19 +372,23 @@ export function soundtrack(withRecording, wavSha) {
   };
 }
 
-// The session log: what a host records around a performance.
+// The session log: what a host records around a performance. History
+// only — a performance never edits the world — so every entry carries
+// the revision the world was built at, and the base is the head.
+const REVISION = 1;
+
 export function opsLog() {
   return [
-    { revision: 1, timestamp_ms: 1790000300000, author: { name: "build" },
+    { revision: REVISION, timestamp_ms: 1790000300000, author: { name: "build" },
       ops: [{ tool: "build_songworld", args: { score: "am-f-c-g", bpm: BPM },
         result_hash: "sha256:9f14e45fceea167a5a36dedd4bea2543f",
         phase: "score", timestamp_ms: 1790000300010 }] },
-    { revision: 1, timestamp_ms: 1790000305000, author: { name: "visitor-1" },
+    { revision: REVISION, timestamp_ms: 1790000305000, author: { name: "visitor-1" },
       ops: [
         { input: { actor: "visitor-1", position: [0.0, 1.8, 8.0], look: [180.0, -6.0] } },
         { input: { actor: "visitor-1", position: [-2.0, 1.8, 5.0], look: [200.0, -4.0] } },
         { input: { actor: "visitor-1", position: [-4.5, 1.8, 1.0], look: [230.0, -8.0], click: 20 } }] },
-    { revision: 1, timestamp_ms: 1790000390000, author: { name: "host" },
+    { revision: REVISION, timestamp_ms: 1790000390000, author: { name: "host" },
       ops: [
         { clock: { playing: true, position_s: 0.0 } },
         { clock: { playing: false, position_s: 64.0 } },
@@ -389,35 +397,64 @@ export function opsLog() {
 }
 
 // ---------------------------------------------------------------------------
-// Emit
+// Emit: head-first packages (package format 2). manifest.json is the
+// world at the tip of main, in the reference's canonical text; each log
+// entry's id is the hash of its content, parent link included; and
+// package.json names the bytes of both. The log holds no edits, so the
+// manifest is also the base — no snapshots/base.json.
 // ---------------------------------------------------------------------------
 
+const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
+
+function identified(entries) {
+  let parent = null;
+  return entries.map((entry) => {
+    const linked = parent ? { parent, ...entry } : entry;
+    parent = computeEntryId(linked);
+    return { id: parent, ...linked };
+  });
+}
+
 function writePackage(dir, manifestJson, withAssets, wavBuffer) {
+  const text = manifestText(manifestJson);
+  const log = identified(opsLog());
+  const logText = log.map((e) => JSON.stringify(e)).join("\n") + "\n";
+  const main = log.at(-1).id;
+
+  // An exporter checks the fold before it names the bytes (spec/package.md,
+  // "Exports from other systems"): read back strictly through the
+  // reference, main folded over the base must be the manifest.
+  const entries = logText.split("\n").filter(Boolean)
+    .map((line) => parseLogLine(line, { strict: true }));
+  if (manifestText(toManifest(foldPath(parseManifest(text), entries, main))) !== text) {
+    throw new Error(`${dir}: main does not fold to manifest.json`);
+  }
+
+  // The authority's write order: assets, the log, the metadata naming the
+  // new bytes, then the manifest.
   mkdirSync(path.join(dir, "assets"), { recursive: true });
-  writeFileSync(path.join(dir, "manifest.json"), JSON.stringify(manifestJson, null, 1) + "\n");
-  writeFileSync(path.join(dir, "ops.jsonl"),
-    opsLog().map((e) => JSON.stringify(e)).join("\n") + "\n");
+  if (withAssets && wavBuffer) {
+    writeFileSync(path.join(dir, "assets", `${sha256(wavBuffer)}.wav`), wavBuffer);
+  }
+  writeFileSync(path.join(dir, "ops.jsonl"), logText);
   writeFileSync(path.join(dir, "state.json"), JSON.stringify({
     format_version: 1,
     fields: { "plays.count": { type: "int", initial: 0 } },
   }, null, 1) + "\n");
   writeFileSync(path.join(dir, "package.json"), JSON.stringify({
-    format_version: 1,
+    format_version: 2,
     name: withAssets ? "song-world-recording" : "song-world",
     profiles: ["viewer", "player", "session"],
-    base_revision: 0,
-    head_revision: 1,
-    refs: { main: "line-3" },
-    forked_from: withAssets ? "song-world@line-3" : null,
+    base_revision: REVISION,
+    head_revision: REVISION,
+    refs: { main },
+    forked_from: withAssets ? `song-world@${main}` : null,
     seed: null,
+    world_sha256: sha256(text),
+    log_sha256: sha256(logText),
     updated_ms: 1790000390000,
   }, null, 1) + "\n");
-  if (withAssets && wavBuffer) {
-    const sha = createHash("sha256").update(wavBuffer).digest("hex");
-    writeFileSync(path.join(dir, "assets", `${sha}.wav`), wavBuffer);
-    return sha;
-  }
-  return null;
+  writeFileSync(path.join(dir, "manifest.json"), text);
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
@@ -428,7 +465,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     manifest(soundtrack(false)), false, null);
   // The recording: same score, plus the WAV, content-addressed.
   const buffer = wav(render());
-  const sha = createHash("sha256").update(buffer).digest("hex");
+  const sha = sha256(buffer);
   writePackage(path.join(root, "world-recording"),
     manifest(soundtrack(true, sha)), true, buffer);
   console.log(`wrote world/ (silent) and world-recording/`);

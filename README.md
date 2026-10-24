@@ -23,6 +23,12 @@ them byte for byte — the WAV's SHA-256 is its filename, and the test
 suite checks it). The arrangement is legible in the curves themselves:
 the drop's energy dwarfs the intro's, and a test asserts it.
 
+Both are head-first packages (package format 2): `manifest.json` in
+the reference's canonical text, log entries named by the hash of their
+content, and `package.json` naming the bytes of both. The build reads
+its own output back through the reference and refuses to write a
+package whose log doesn't fold to its manifest.
+
 ## The score
 
 `build/build.mjs` composes 32 bars at 120 BPM in A minor (Am–F–C–G):
@@ -36,7 +42,7 @@ the way down.
 ## Use
 
 ```bash
-npm install   # openworldformat ^0.2.0, from the registry
+npm install   # openworldformat ^0.3.5, from the registry
 npm run build # regenerates world/ and world-recording/ (deterministic)
 npm test      # folds, validates, and checks the arrangement reads
 ```

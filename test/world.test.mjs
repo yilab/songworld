@@ -5,11 +5,17 @@ import { readFileSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
-import { parseManifest, parseLogLine, foldLog, foldState } from "openworldformat";
+import {
+  parseManifest, parseLogLine, foldLog, foldState, foldPath, toManifest, manifestText,
+  buildHistory, computeEntryId,
+} from "openworldformat";
 import { curves, render, wav, DURATION } from "../build/build.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const read = (p) => readFileSync(path.join(root, p), "utf8");
+const sha256 = (p) => createHash("sha256").update(readFileSync(path.join(root, p))).digest("hex");
+const logOf = (dir) => read(`${dir}/ops.jsonl`).split("\n").filter((l) => l.trim())
+  .map((line) => parseLogLine(line, { strict: true }));
 
 const worlds = ["world", "world-recording"];
 
@@ -19,8 +25,30 @@ const HONORED_TARGETS = new Set(["emissive", "scale", "light_intensity", "opacit
 
 for (const dir of worlds) {
   const manifest = parseManifest(read(`${dir}/manifest.json`));
-  const entries = read(`${dir}/ops.jsonl`).split("\n").filter((l) => l.trim())
-    .map(parseLogLine);
+  const entries = logOf(dir);
+  const pkg = JSON.parse(read(`${dir}/package.json`));
+
+  test(`${dir}: head-first — every ref resolves, and main folds to manifest.json`, () => {
+    assert.equal(pkg.format_version, 2);
+    const { byId } = buildHistory(entries);
+    for (const [ref, id] of Object.entries(pkg.refs)) {
+      assert.ok(byId.has(id), `ref '${ref}' names '${id}', which isn't in the log`);
+    }
+    for (const entry of entries) {
+      assert.equal(entry.id, computeEntryId(entry), "an entry's id is the hash of its content");
+    }
+    const head = toManifest(foldPath(manifest, entries, pkg.refs.main));
+    assert.equal(manifestText(head), read(`${dir}/manifest.json`));
+    assert.equal(pkg.head_revision, byId.get(pkg.refs.main).revision);
+    assert.equal(pkg.base_revision, pkg.head_revision, "no edits: the manifest is the base");
+  });
+
+  test(`${dir}: package.json names the bytes, in canonical text`, () => {
+    assert.equal(pkg.world_sha256, sha256(`${dir}/manifest.json`));
+    assert.equal(pkg.log_sha256, sha256(`${dir}/ops.jsonl`));
+    const text = read(`${dir}/manifest.json`);
+    assert.equal(manifestText(JSON.parse(text)), text);
+  });
 
   test(`${dir}: parses, folds, and the session is history-only`, () => {
     assert.equal(manifest.version, 3);
@@ -79,6 +107,13 @@ test("world-recording: the path resolves to a content-addressed asset", () => {
   assert.ok(existsSync(file), `${st.path} missing`);
   const sha = createHash("sha256").update(readFileSync(file)).digest("hex");
   assert.equal(st.path, `assets/${sha}.wav`, "the name is the hash of what it holds");
+});
+
+test("world-recording: forked from the silent package, at an entry it holds", () => {
+  const [, name, at] = JSON.parse(read("world-recording/package.json"))
+    .forked_from.match(/^([^@]+)@(.+)$/);
+  assert.equal(name, JSON.parse(read("world/package.json")).name);
+  assert.ok(buildHistory(logOf("world")).byId.has(at), `no entry '${at}' in world/ops.jsonl`);
 });
 
 test("the drop is louder than the intro — the arrangement reads from the curves", () => {

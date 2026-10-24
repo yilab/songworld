@@ -12,7 +12,7 @@
     "deploy": "./deploy.sh"
   },
   "dependencies": {
-    "openworldformat": "^0.2.0"
+    "openworldformat": "^0.3.5"
   },
   "license": "Apache-2.0",
   "devDependencies": {

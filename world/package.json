@@ -1,17 +1,19 @@
 {
- "format_version": 1,
+ "format_version": 2,
  "name": "song-world",
  "profiles": [
   "viewer",
   "player",
   "session"
  ],
- "base_revision": 0,
+ "base_revision": 1,
  "head_revision": 1,
  "refs": {
-  "main": "line-3"
+  "main": "sha256:37f2f3db37ef355e69d9a8c8487785a8e7f0673088706807e5755e1ce2ab282b"
  },
  "forked_from": null,
  "seed": null,
+ "world_sha256": "fd658f5b27be683e20c2bcd2367299c9b7dd065405d1a79c7f507fee94aaaa91",
+ "log_sha256": "02ca0ec784b82cd51c446a62379c5adbfb841d9cc6bc5988ea66ea3c19374394",
  "updated_ms": 1790000390000
 }
