@@ -24,16 +24,9 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npm run check
       # The manifests and state documents validate against the format's
-      # normative schemas (fetched from the spec repository — this repo
-      # has no sibling).
+      # normative schemas, resolved by npm run validate: the installed
+      # package first, then a sibling checkout, then the spec
+      # repository (the runner has neither package schemas nor a
+      # sibling, so it fetches).
       - name: Validate against the Open World Format schemas
-        run: |
-          schema=https://raw.githubusercontent.com/openworldformat/openworldformat/main/schema
-          curl -fsSL "$schema/world.schema.json" -o /tmp/world.schema.json
-          curl -fsSL "$schema/state.schema.json" -o /tmp/state.schema.json
-          npx -y ajv-cli@5 validate -s /tmp/world.schema.json \
-            -d "world/manifest.json" -d "world-recording/manifest.json" \
-            --spec=draft2020 --strict=false
-          npx -y ajv-cli@5 validate -s /tmp/state.schema.json \
-            -d "world/state.json" -d "world-recording/state.json" \
-            --spec=draft2020 --strict=false
+        run: npm run validate

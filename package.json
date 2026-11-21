@@ -7,6 +7,7 @@
   "scripts": {
     "build": "node build/build.mjs",
     "test": "node --test",
+    "validate": "node tools/validate-schemas.mjs",
     "assemble": "node web/assemble.mjs",
     "check": "npm run assemble && node web/check.mjs",
     "deploy": "./deploy.sh"

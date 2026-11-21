@@ -28,11 +28,13 @@ not here.
 - Every modulation target must be one the reference renderer honors
   (emissive, scale, light_intensity, opacity, offset_y) and every
   signal must resolve against the soundtrack — the tests enforce both.
-- Validate against the sibling schemas before committing format changes:
-  `npx ajv-cli@5 validate -s ../openworldformat/schema/world.schema.json
-  -d "world/manifest.json" -d "world-recording/manifest.json"
-  --spec=draft2020 --strict=false`, and `state.schema.json` against
-  both `state.json` files the same way.
+- Validate against the normative schemas before committing format
+  changes: `npm run validate` checks `world.schema.json` against both
+  committed manifests and `state.schema.json` against both `state.json`
+  files (draft 2020, strict off). It resolves each schema from the
+  installed `openworldformat` package (its `./schema/*` exports), then
+  the sibling checkout `../openworldformat/schema/`, then the GitHub
+  raw URL.
 - Conventional commits, no Co-Authored-By trailers. `npm test` must
   pass before reporting completion.
 - License: Apache-2.0, including the synthesized music — never add
@@ -40,7 +42,9 @@ not here.
 
 ## Open items
 
-- Schema validation still reads the sibling checkout
-  (`../openworldformat/schema/`) — the normative schema doesn't ship in
-  the npm package. If that sibling is absent, validate via the GitHub
-  raw URL instead.
+- The schemas still resolve from the sibling checkout or the GitHub
+  raw URL: the installed `openworldformat` is ^0.3.5, and the
+  `./schema/*` exports first ship in 0.3.8, which isn't published yet.
+  `npm run validate` tries the package first, so the source switches by
+  itself once the dependency is bumped — bump it only after 0.3.8
+  lands on the registry.

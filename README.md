@@ -45,11 +45,15 @@ the way down.
 npm install   # openworldformat ^0.3.5, from the registry
 npm run build # regenerates world/ and world-recording/ (deterministic)
 npm test      # folds, validates, and checks the arrangement reads
+npm run validate # both packages against the normative schemas
 ```
 
 The reference comes from npm — this repository holds no LocalGPT code
 and no spec-repo symlinks; parse, fold and state-folding all run
-against the published package.
+against the published package. The schemas resolve the same way,
+first match wins: the installed package's `./schema/*` exports (once
+the dependency ships them), a `../openworldformat` checkout beside
+this repo, or the spec repository's raw URL.
 
 Any conforming renderer opens `world/manifest.json`; the audio starts
 from the world's own soundtrack block, not a player widget.
@@ -78,6 +82,7 @@ build/build.mjs   the score, the synth, the curves, the emitter
 world/            the silent package (curves only)
 world-recording/  the package with the recording (content-addressed)
 test/             folds + schema discipline + musical assertions
+tools/            the schema-validation command (npm run validate)
 web/              the shareable page (assembled; gitignored output)
 ```
 
