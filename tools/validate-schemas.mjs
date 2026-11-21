@@ -10,9 +10,9 @@
 //      reference the build itself runs against (ships >= 0.3.8);
 //   2. the sibling checkout ../openworldformat/schema/;
 //   3. the spec repository's raw URL, downloaded to a temp dir.
-// The dependency still predates 0.3.8, so today the sibling (or the
-// URL, without a sibling) is the effective source — a dep bump flips
-// the package path on by itself, with nothing to change here.
+// The dependency is >= 0.3.8, so the installed package is the
+// effective source; the sibling and the raw URL only serve
+// environments without it.
 
 import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";

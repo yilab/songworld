@@ -39,12 +39,3 @@ not here.
   pass before reporting completion.
 - License: Apache-2.0, including the synthesized music — never add
   sampled or licensed audio to this repository.
-
-## Open items
-
-- The schemas still resolve from the sibling checkout or the GitHub
-  raw URL: the installed `openworldformat` is ^0.3.5, and the
-  `./schema/*` exports first ship in 0.3.8, which isn't published yet.
-  `npm run validate` tries the package first, so the source switches by
-  itself once the dependency is bumped — bump it only after 0.3.8
-  lands on the registry.
